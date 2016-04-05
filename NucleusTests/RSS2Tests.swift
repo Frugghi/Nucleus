@@ -57,6 +57,7 @@ class RSS2Tests: XCTestCase {
             let feed = try RSSFeed.createParser().parse(data)
             
             XCTAssertEqual(feed?.title, "Liftoff News")
+            XCTAssertNotNil(feed?.items.first?.publicationDate)
         } catch {
             XCTFail("\(fileName).xml parsing failed")
         }

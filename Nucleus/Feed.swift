@@ -81,19 +81,16 @@ public enum FeedParsingError: ErrorType {
 
 public class Feed {
     
-    public class func load<T: WebFeed>(URL: String, completion: (T?, ErrorType?) -> Void) {
-        guard let URL = NSURL(string: URL) else {
-            dispatch_async(dispatch_get_main_queue()) {
-                completion(nil, FeedParsingError.InvalidURL)
-            }
-            return
-        }
-        
-        return self.load(URL, completion: completion)
+    public let URL: NSURL
+    public var locale: NSLocale
+    
+    public init(URL: NSURL) {
+        self.URL = URL
+        self.locale = NSLocale.currentLocale()
     }
     
-    public class func load<T: WebFeed>(URL: NSURL, completion: (T?, ErrorType?) -> Void) {
-        let request = NSURLRequest(URL: URL)
+    public func load<T: WebFeed>(completion: (T?, ErrorType?) -> Void) {
+        let request = NSURLRequest(URL: self.URL)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, response, error) -> Void in
             if let error = error {
                 dispatch_async(dispatch_get_main_queue()) {
@@ -112,6 +109,7 @@ public class Feed {
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
                 do {
                     let parser = T.createParser()
+                    parser.locale = self.locale
                     let result = try parser.parse(data)
                     dispatch_async(dispatch_get_main_queue()) {
                         completion(result, nil)
@@ -127,9 +125,29 @@ public class Feed {
         task.resume()
     }
     
+    public class func load<T: WebFeed>(URL: String, completion: (T?, ErrorType?) -> Void) -> Feed? {
+        guard let URL = NSURL(string: URL) else {
+            dispatch_async(dispatch_get_main_queue()) {
+                completion(nil, FeedParsingError.InvalidURL)
+            }
+            return nil
+        }
+        
+        return self.load(URL, completion: completion)
+    }
+    
+    public class func load<T: WebFeed>(URL: NSURL, completion: (T?, ErrorType?) -> Void) -> Feed {
+        let feed = Feed(URL: URL)
+        feed.load(completion)
+        
+        return feed
+    }
+    
 }
 
 public class FeedParser<T: WebFeed> {
+    
+    public var locale: NSLocale = NSLocale.currentLocale()
     
     public func parse(data: NSData) throws -> T? {
         return nil
