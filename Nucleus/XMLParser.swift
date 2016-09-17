@@ -24,21 +24,21 @@
 
 import Foundation
 
-internal protocol XMLParser: class {
+internal protocol XMLParserWrapperDelegate: class {
     
-    func didStartXMLElement(elementName: String, attributes attributeDict: [String : String])
-    func didEndXMLElement(elementName: String)
-    func foundCharacters(string: String)
+    func didStartXMLElement(_ elementName: String, attributes attributeDict: [String : String])
+    func didEndXMLElement(_ elementName: String)
+    func foundCharacters(_ string: String)
     
 }
 
-internal class XMLParserWrapper<T: XMLParser>: NSObject, NSXMLParserDelegate {
+internal class XMLParserWrapper<T: XMLParserWrapperDelegate>: NSObject, XMLParserDelegate {
     
-    let parser: NSXMLParser
+    let parser: XMLParser
     weak var delegate: T?
     
-    init(data: NSData, delegate: T) {
-        self.parser = NSXMLParser(data: data)
+    init(data: Data, delegate: T) {
+        self.parser = XMLParser(data: data)
         self.delegate = delegate
     }
     
@@ -52,15 +52,17 @@ internal class XMLParserWrapper<T: XMLParser>: NSObject, NSXMLParserDelegate {
         }
     }
     
-    func parser(parser: NSXMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String]) {
+    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String]) {
+        print("Start: \(elementName)")
         self.delegate?.didStartXMLElement(elementName, attributes: attributeDict)
     }
     
-    func parser(parser: NSXMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
+    func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
+        print("End: \(elementName)")
         self.delegate?.didEndXMLElement(elementName)
     }
     
-    func parser(parser: NSXMLParser, foundCharacters string: String) {
+    func parser(_ parser: XMLParser, foundCharacters string: String) {
         self.delegate?.foundCharacters(string)
     }
     
@@ -84,9 +86,13 @@ internal struct XMLParsedElement {
         self.content = ""
     }
     
+    mutating func append(_ content: String) {
+        self.content += content
+    }
+    
 }
 
-internal func +=(inout lhs: XMLParsedElement, rhs: String) -> XMLParsedElement {
+internal func +=(lhs: inout XMLParsedElement, rhs: String) -> XMLParsedElement {
     lhs.content += rhs
     return lhs
 }

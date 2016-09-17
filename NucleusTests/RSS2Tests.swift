@@ -28,15 +28,15 @@ import Foundation
 
 class RSS2Tests: XCTestCase {
     
-    var timeout: NSTimeInterval!
-    var bundle: NSBundle!
+    var timeout: TimeInterval!
+    var bundle: Bundle!
     
     override func setUp() {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
         
         self.timeout = 10.0
-        self.bundle = NSBundle(forClass: self.dynamicType)
+        self.bundle = Bundle(for: type(of: self))
     }
     
     override func tearDown() {
@@ -46,9 +46,9 @@ class RSS2Tests: XCTestCase {
     
     func testHarvardSample() {
         let fileName = "Harvard-rss2sample"
-        var data: NSData!
-        if let path = self.bundle.pathForResource(fileName, ofType: "xml") {
-            data = NSData(contentsOfFile: path)!
+        var data: Data!
+        if let path = self.bundle.path(forResource: fileName, ofType: "xml") {
+            data = try! Data(contentsOf: URL(fileURLWithPath: path))
         } else {
             XCTFail("File \(fileName).xml not found")
         }
@@ -59,7 +59,7 @@ class RSS2Tests: XCTestCase {
             XCTAssertEqual(feed?.title, "Liftoff News")
             XCTAssertNotNil(feed?.items.first?.publicationDate)
         } catch {
-            XCTFail("\(fileName).xml parsing failed")
+            XCTFail("\(fileName).xml parsing failed: \(error)")
         }
         
     }
