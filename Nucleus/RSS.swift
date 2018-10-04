@@ -123,7 +123,7 @@ private class RSSParser: FeedParser<RSSFeed>, XMLParserWrapperDelegate {
     var parseStack = [String]()
     lazy var dateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
-        dateFormatter.locale = self.locale as Locale!
+        dateFormatter.locale = self.locale as Locale
         dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
         return dateFormatter
     }()

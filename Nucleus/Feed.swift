@@ -55,7 +55,7 @@ public struct FeedAuthor {
     }
     
     internal init(_ email: String) {
-        let components = email.characters.split(maxSplits: 2, omittingEmptySubsequences: true) { " ()".characters.contains($0) }.map(String.init)
+        let components = email.split(maxSplits: 2, omittingEmptySubsequences: true) { " ()".contains($0) }.map(String.init)
         
         self.name = components.last
         self.email = components.first
@@ -81,8 +81,8 @@ public enum FeedParsingError: Error {
 
 open class Feed {
     
-    open let URL: URL
-    open var locale: Locale
+    public let URL: URL
+    public var locale: Locale
     
     public init(URL: URL) {
         self.URL = URL
